@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"> 
+    <meta name="description" content="Webmaster">
+    <meta name="keywords" content="servidorwebrtc,webrtc,rtc,medilabsistemas,medilab,medirtc">
+    <meta name="author" content="Tiago, Bernardo, Anderson, Rodrigo">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <!--<link rel="shortcut icon" href="./img/icon.png" /> -->
+    <link rel="shortcut icon" href="./css/imagens/icon.png" />
+    <title>Tela de confirmação</title>
+    <link rel="stylesheet" type="text/css" href="./salaEspera.css">
+    <link rel="stylesheet" type="text/css" href="./css/modal.css"><!------mudar------>
+    <link rel="stylesheet" type="text/css" href="./css/normalize.min.css"><!------mudar------>
+    <script src="./js/jquery-3.5.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+       <!-- <img class="logoicon" src="./img/logoicon.png" alt=""> -->
+        <img class="logoicon" src="./css/imagens/logoicon.png" alt="">
+    <div class="box">
+        <!-- <img class="logo" src="./img/perfil.png" alt=""> -->
+        <img class="logo" src="./css/imagens/perfil.png" alt="">
+        <h1 id ="nome"> Olá </h1>        
+    </div><!--box--->
+        <div class="box2">
+            <p class="texto" id="texto">Sua consulta está prestes a ser confirmada!<br>Você será redirecionado(a) para a fila de consulta em instantes.<br>Por favor, aguarde.</p><!--STATUS: OK-->
+            <p class="texto" id="posicao">Sua posição nesta fila é </p>
+            <div id = "Status"><!--corfimado--></div>
+<!---------------------------modal-------------------------------------->
+            <div class="modal">
+                <input type="checkbox" class="modal-trigger" id="modal">
+                    <label class="modal-overlay" for="modal"></label>
+                        <label class="button" for="modal">Sair da fila</label>
+                        <div class="modal-container">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3>Deseja sair da fila de consulta ?</h3>
+                                        </div><!--card-header-->
+                                    <div class="card-body card-footer">
+                                <label class="button" id="btn-sair" onclick="sairConsulta()">Sim</label> 
+                            <label class="button" for="modal" class="item action">Não</label>
+                        </div><!--card--body--footer-->                
+                    </div><!--card-->           
+                </div><!--modal--container-->
+            </div><!--modal-->  
+        </div><!--box2-->
+    </div><!--container-->
+</body>
+<script>
+    var parametrosUrl;
+    function sairConsulta(){
+/*         var y = document.getElementById("cancelar");
+        y.innerHTML ="Deseja realmente sair? Ao clicar em SIM, não será possível voltar a sua posição atual na fila e a consulta será permanentemente excluída."
+        var button = document.createElement("button");
+        button.appendChild(document.createTextNode("Accept"));
+        button.onclick = function() {
+            console.log("Teste")
+        }; */
+        const Url3 = '/mediagenda_web/rest/teleAtendimento/limparUrl'
+         $.ajax({
+            type: 'POST',
+            url: Url3,//mudar pro link do banco
+            dataType: 'JSON',
+            headers:{
+                'Authorization':`Bearer ${token[1]}`,
+                //'Authorization':'Bearer' + localStorage.getItem("mediAgendaToken"),
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'contentLanguage': 'pt-BR'
+            },
+            data: {'codigoAgendamento':chaveValor[1]},   
+            success: function (teste) {
+                window.location.href="/mediagenda_web/#/dashboard"
+            },
+            error: function (teste) {
+                console.log(teste)
+            },
+            complete: function () {
+                // ao final da requisição...
+            }
+                                                         
+        })
+        
+    }
+    $( document ).ready(function() {
+    
+    var conexao = new Object();
+    CapturaParametrosUrl()
+    var chaveValor = parametrosUrl.toString().split('=');
+    console.log(parametrosUrl.toString())
+    conexao[chaveValor[0]] = chaveValor[1];
+    console.log(conexao)
+    
+    var link = "";
+    var status
+    var posicao = document.getElementById("posicao");
+    var nome = document.getElementById("nome");
+
+    var token = localStorage.getItem("mediAgendaToken")
+    console.log(token)
+    token = token.split("|")
+    console.log(token[1])
+    console.log(`Bearer ${token[1]}`)
+
+    let json = {
+        status,
+        link
+    };
+    let stop = setInterval(function(){
+        const Url = '/mediagenda_web/rest/teleAtendimento/getTeleAtendimentoPrimeiraFila'
+        $.ajax({
+                type: 'POST',
+                        url: Url,//mudar pro link do banco
+                        dataType: 'JSON',
+                        headers:{
+                            'Authorization':`Bearer ${token[1]}`,
+                            //'Authorization':'Bearer' + localStorage.getItem("mediAgendaToken"),
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'contentLanguage': 'pt-BR'
+                        },
+                        data: {'codigoAgendamento':chaveValor[1]},
+                        success: function (resposta) {
+                            console.log(resposta)
+                            console.log(resposta.STATUS)
+                            console.log(resposta.URL)
+
+                            status = resposta.STATUS
+                            link = resposta.URL
+                            posicao.innerHTML = `Sua posição é: ${resposta.POSICAO}`
+                            var firstName = resposta.NM_PAC
+                            firstName = firstName.split(" ")
+                            nome.innerHTML = `Olá ${firstName[0]}`
+                            localStorage.setItem("nomePaciente",firstName[0]) 
+                            
+                            texto();
+                            if (resposta.STATUS == "Conf") {
+                                localStorage.setItem("osExame",resposta.OS_EXAME) 
+                                setTimeout(function(){window.location.href = "salaEsperaConsulta.html"+"?osExame="+resposta.OS_EXAME;},20000)
+                                clearInterval(stop);           
+                            
+                            } else if(resposta.STATUS == "OK" && link != undefined){
+                                setTimeout(function(){window.location.href = link;},20000)
+                                clearInterval(stop); 
+                                // resposta.limparUrl(resposta.idEquipamento,resposta.data,resposta.hora)
+                                
+                                    const Url2 = '/mediagenda_web/rest/teleAtendimento/limparUrl'
+                                    $.ajax({
+                                        type: 'POST',
+                                        url: Url2,//mudar pro link do banco
+                                        dataType: 'JSON',
+                                        headers:{
+                                            'Authorization':`Bearer ${token[1]}`,
+                                            //'Authorization':'Bearer' + localStorage.getItem("mediAgendaToken"),
+                                            'Content-Type': 'application/x-www-form-urlencoded',
+                                            'contentLanguage': 'pt-BR'
+                                        },
+                                        data: {'idEquipamento':resposta.ID_EQUIP,'data':resposta.DATA,'hora':resposta.HORA},   
+                                        success: function (teste) {},
+                                        error: function (teste) {
+                                            console.log(teste)
+                                         },
+                                        complete: function () {
+                                            // ao final da requisição...
+                                        }
+                                                         
+                                    })
+                                
+                            }
+                        
+                        },
+                error: function (resposta) {
+                    console.log(resposta)
+                },
+                        complete: function () {
+                        // ao final da requisição...
+                        }
+        });
+    }, 3000);
+
+    let nomePaciente = ""
+    let osExame = ""
+    console.log(nomePaciente)
+
+
+    function texto(){
+        var x = document.getElementById("texto");
+  
+        if(status === "OK" && link != undefined){
+            x.innerHTML ="Precisamos confirmar algumas informações, você será redirecionado para uma Video confêrencia"
+        } else if(status === "Conf"){
+            x.innerHTML = "Sua consulta foi confirmada, você será redirecionado(a) para a fila de consulta do médico em instantes."
+        }
+    }
+    });
+
+    function CapturaParametrosUrl() {
+
+        //captura a url da página
+        var url = window.location.href; 
+
+        //tenta localizar o ?
+        var res = url.split('?'); 
+
+        if (res[1] === undefined) {
+            alert('página sem parâmetros.');
+        }
+
+        if (res[1] !== undefined) {
+            //tenta localizar os & (pode haver mais de 1)
+            var parametros = res[1].split('&');
+            parametrosUrl = parametros;   
+        }
+}
+   
+</script>
+</html>

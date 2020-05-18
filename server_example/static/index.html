@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"> 
+	<meta name="description" content="Webmaster">
+	<meta name="keywords" content="servidorwebrtc,webrtc,rtc,medilabsistemas,medilab,medirtc">
+	<meta name="author" content="Tiago, Bernardo, Anderson, Rodrigo">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <link rel="shortcut icon" href="imagens/icon.png" />
+    <link rel="stylesheet" href="landing.css">
+    <title>Login MediRTC</title>
+</head>
+<body>
+    <div id="fundo-externo">
+        <div id="fundo">
+            <section class="content-center">
+                <div class="logo"></div><!--logo-->
+                <div id = "form-login" action = "./medirtc/MediRTC.html" method>
+                <input type="text" id = "NOMEMEDICO" placeholder="Nome do médico"></input>
+                <input type="text" id = "NOMEPACIENTE" placeholder="Nome do paciente"></input>
+                <input type="text" id = "CRM" placeholder="CRM do médico"></input>
+                <input type="text" id = "STATUS" placeholder="STATUS"></input>
+                <button class="btn" onclick="funcaoParaExecutar()" id="btn">criar sala</button>
+            </div><!--form-->
+        </section><!--content-center-->
+    </div><!--fundo-->
+</div><!--fundo-externo-->
+</body>
+<script>
+    now = new Date;
+    now = now
+    dataLimite = adicionarMinutos(now, 30)
+
+/*     var horasMs = Date.parse(now) + 120000;
+    horasMs = horasMs.toString()
+    now = now.toISOString()
+    now = now.substring(0, now.indexOf('T') + 1)
+    now = now + horasMs */
+    function adicionarMinutos(data, minutos) {
+     return new Date(data.getTime() + minutos * 60000).getTime();
+    }
+    function funcaoParaExecutar() {
+
+        let nMedico = document.querySelector("#NOMEMEDICO").value;
+        let nPaciente = document.querySelector("#NOMEPACIENTE").value;
+        let crmMedico = document.querySelector("#CRM").value;
+        let status = document.querySelector("#STATUS").value;
+        let json = {
+            nMedico,
+            nPaciente,
+            crmMedico,
+            status
+        };
+
+        if (!json.nMedico){
+            alert("O nome do médico deve ser preenchido");
+        } else if(!json.nPaciente){ 
+            alert("O nome do paciente deve ser preenchido");
+        } else if(!json.crmMedico){
+            alert("O crm deve ser preenchido");
+        } else if(!json.status){
+            alert("O status deve ser preenchido");
+        } else {
+            window.location.href = "./medirtc/MediRTC.html" +  "?NOMEMEDICO="+nMedico+"&NOMEPACIENTE="+nPaciente+"&CRM="+crmMedico+"&DATA=" + dataLimite + "&STATUS="+status;
+        }
+    }</script>
+</html>
